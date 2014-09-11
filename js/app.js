@@ -8,6 +8,7 @@ jQuery(function ($) {
 
 	var ENTER_KEY = 13;
 	var ESCAPE_KEY = 27;
+    var API_ENDPOINT = "api/todos";
 
 	var util = {
 		uuid: function () {
@@ -40,16 +41,20 @@ jQuery(function ($) {
 
 	var App = {
 		init: function () {
-			this.todos = util.store('todos-jquery');
-			this.cacheElements();
-			this.bindEvents();
+            this.todos = [];
+            var that = this;
+            $.getJSON(API_ENDPOINT).done(function(todos){
+                that.todos = todos;
+                that.cacheElements();
+                that.bindEvents();
 
-			Router({
-				'/:filter': function (filter) {
-					this.filter = filter;
-					this.render();
-				}.bind(this)
-			}).init('/all');
+                Router({
+                    '/:filter': function (filter) {
+                        that.filter = filter;
+                        that.render();
+                    }.bind(that)
+                }).init('/all');
+            });
 		},
 		cacheElements: function () {
 			this.todoTemplate = Handlebars.compile($('#todo-template').html());
@@ -152,15 +157,22 @@ jQuery(function ($) {
 				return;
 			}
 
-			this.todos.push({
+            var newTodo = {
 				id: util.uuid(),
 				title: val,
 				completed: false
-			});
+			};
 
-			$input.val('');
+            var that = this;
+            $.post(API_ENDPOINT,newTodo)
+           .done(function(   ) {
+                that.todos.push(newTodo);
 
-			this.render();
+                $input.val('');
+
+                that.render();
+            });
+
 		},
 		toggle: function (e) {
 			var i = this.indexFromEl(e.target);
