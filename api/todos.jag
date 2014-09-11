@@ -1,8 +1,21 @@
 <%
 var log = new Log('sample.todo.API');
 
+function encodeBase64(str) {
+    var bytes = new Packages.java.lang.String(str).getBytes();
+    var converted = Packages.org.apache.commons.codec.binary.Base64.encodeBase64(bytes);
+    return String(new Packages.java.lang.String(converted));
+}
+
+function decodeBase64(str) {
+    var bytes = new Packages.java.lang.String(str).getBytes();
+    var converted = Packages.org.apache.commons.codec.binary.Base64.decodeBase64(bytes);
+    return String(new Packages.java.lang.String(converted));
+}
+
 var user = session.get('user');
 if (user) {
+    var id;
     var registry = user.registry;
     var space = '/_system/governance/users/' + user.info.username;
 
@@ -13,7 +26,7 @@ if (user) {
         // title : string - text to be shown in the ui
         // completed : boolean - is item in "strikethrough" state
 
-        var id = request.getParameter('id');
+        id = request.getParameter('id');
         if (!registry.exists(space)) {
             registry.put(space, {
                 collection: true
@@ -27,7 +40,7 @@ if (user) {
         };
         registry.put(space + "/" + id, {
             name: id,
-            content: stringify(todo)
+            content: encodeBase64(stringify(todo))
         });
 
         log.info('saved todo for user : ' + user.info.username + ' at ' + space + '/' + id);
@@ -42,7 +55,7 @@ if (user) {
             for (var i = 0; i < todoPaths.length; i++) {
                 var todoPath = todoPaths[i];
                 var todoContent = registry.get(todoPath).content.toString();
-                todos.push(parse(todoContent));
+                todos.push(parse(decodeBase64(todoContent)));
             }
 
             print(todos);
