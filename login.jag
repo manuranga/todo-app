@@ -8,11 +8,22 @@ if (session.get('user')) {
 
     if (userName && password) {
         var carbon = require('carbon');
-        var url = 'https://10.100.0.49:9443/admin/services/';
-        var server = new carbon.server.Server(url);
+        var server = new carbon.server.Server();
 
         authenticated = server.authenticate(userName, password);
-        session.put('user',userName);
+
+        if(authenticated){
+            var userInfo = carbon.server.tenantUser(userName);
+
+            //noinspection JSValidateTypes
+            session.put('user', {
+                info: userInfo,
+                registry: new carbon.registry.Registry(server, {
+                    username: userName,
+                    tenantId: userInfo.tenantId
+                })
+            });
+        }
     }
 }
 

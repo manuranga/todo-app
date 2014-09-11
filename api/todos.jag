@@ -1,14 +1,57 @@
 <%
 var log = new Log('sample.todo.API');
 
-if (request.getMethod() == 'POST') {
-    log.info(request.getParameter('id'));
-} else if (request.getMethod() == 'GET') {
-    print([
-        {"id": "9bb85852-2725-46ae-a6a5-7d89757f453f", "title": "item 1", "completed": false},
-        {"id": "f166a665-1029-452b-abab-f84198ba4aa8", "title": "item 2", "completed": false},
-        {"id": "9ef2eb46-bc3f-40d5-966f-d8e0485fe4b1", "title": "item 3 , completead", "completed": true}
-    ])
+var user = session.get('user');
+if (user) {
+    var registry = user.registry;
+    var space = '/_system/governance/users/' + user.info.username;
+
+    if (request.getMethod() == 'POST') {
+        // http post to /todo-app/api/todos with URL encoded parameters
+        // handles adding new todo items
+        // id : string - unique id for the item
+        // title : string - text to be shown in the ui
+        // completed : boolean - is item in "strikethrough" state
+
+        var id = request.getParameter('id');
+        if (!registry.exists(space)) {
+            registry.put(space, {
+                collection: true
+            });
+            log.info('user space was created for user : ' + user.info.username + ' at ' + space);
+        }
+        var todo = {
+            "id": id,
+            "title": request.getParameter('title'),
+            "completed": (request.getParameter('completed')=='true')
+        };
+        registry.put(space + "/" + id, {
+            name: id,
+            content: stringify(todo)
+        });
+
+        log.info('saved todo for user : ' + user.info.username + ' at ' + space + '/' + id);
+
+    } else if (request.getMethod() == 'GET') {
+        // http get to /todo-app/api/todos , no parameters
+        // handles retrieval of current items
+
+        if (registry.exists(space)) {
+            var todos = [];
+            var todoPaths = registry.get(space).content;
+            for (var i = 0; i < todoPaths.length; i++) {
+                var todoPath = todoPaths[i];
+                var todoContent = registry.get(todoPath).content.toString();
+                todos.push(parse(todoContent));
+            }
+
+            print(todos);
+        } else {
+            print([]);
+        }
+    }
+} else {
+    response.sendError(401, "please log in first");
 }
 
 %>
