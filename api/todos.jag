@@ -1,0 +1,14 @@
+<%
+var log = new Log('sample.todo.API');
+
+if (request.getMethod() == 'POST') {
+    log.info(request.getParameter('id'));
+} else if (request.getMethod() == 'GET') {
+    print([
+        {"id": "9bb85852-2725-46ae-a6a5-7d89757f453f", "title": "item 1", "completed": false},
+        {"id": "f166a665-1029-452b-abab-f84198ba4aa8", "title": "item 2", "completed": false},
+        {"id": "9ef2eb46-bc3f-40d5-966f-d8e0485fe4b1", "title": "item 3 , completead", "completed": true}
+    ])
+}
+
+%>
