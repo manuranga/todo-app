@@ -1,4 +1,8 @@
-<!doctype html>
+<%
+if(!session.get('user')){
+   response.sendRedirect('login');
+}else{
+%>
 <html lang="en" data-framework="jquery">
 	<head>
 		<meta charset="utf-8">
@@ -58,3 +62,4 @@
 		<script src="js/app.js"></script>
 	</body>
 </html>
+<%}%>
